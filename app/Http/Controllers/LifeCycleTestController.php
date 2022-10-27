@@ -23,7 +23,7 @@ class LifeCycleTestController extends Controller
         // $sample = new Sample($message);
         // $sample->run();
 
-        // サービスコンテナなしのパターン
+        // サービスコンテナありのパターン
         app()->bind('sample', Sample::class);
         $sample = app()->make('sample');
         $sample->run();
