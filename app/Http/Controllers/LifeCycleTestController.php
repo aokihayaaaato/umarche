@@ -6,6 +6,17 @@ use Illuminate\Http\Request;
 
 class LifeCycleTestController extends Controller
 {
+    public function showServiceProviderTest()
+    {
+        $encrypt = app()->make('encrypter');
+        $password = $encrypt->encrypt('password');
+
+        // 自分でサービスプロバイダーを作成して、読み込み時に自動でサービスコンテナに登録される → それを呼び出した！
+        $sample = app()->make('serviceProviderTest');
+
+        dd($sample, $password, $encrypt->decrypt($password));
+    }
+
     public function showServiceContainerTest()
     {
         // app()->bind()でサービスコンテナに機能を登録する
