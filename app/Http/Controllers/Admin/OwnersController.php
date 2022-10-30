@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Owner;   // Eloquent
+use App\Models\Shop;   // Eloquent
 use Illuminate\Support\Facades\DB;  // QueryBuilder
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule; // update処理の際にemailのuniqueバリデーションは避けたい為
+use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class OwnersController extends Controller
 {
@@ -66,12 +69,28 @@ class OwnersController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        Owner::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try{
+            
+            DB::transaction(function () use($request) {
+                // Owner作成後、作成したレコードのidを取りたいので、変数に代入
+                $owner = Owner::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                ]);
 
+                Shop::create([
+                    'owner_id' => $owner->id,
+                    'name' => '店名を入力して下さい',
+                    'information' => '',
+                    'filename' => '',
+                    'is_selling' => true,
+                ]);
+            }, 2);  // transactionの第二引数はエラーが発生した際に処理を再度実行してくれる回数。
+        }catch(Throwable $e){
+            Log::error($e); // storage/logs配下に記録される
+            throw $e;
+        }
 
         return redirect()
         ->route('admin.owners.index')
