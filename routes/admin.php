@@ -23,12 +23,13 @@ use App\Http\Controllers\admin\OwnersController;
 |
 */
 
-Route::get('/', function () {
-    return view('admin.welcome');
-});
+// Route::get('/', function () {
+//     return view('admin.welcome');
+// });
 
+// exceptで指定したメソッドをルーティングから除外する
 Route::resource('owners', OwnersController::class)
-->middleware('auth:admin');
+->middleware('auth:admin')->except(['show']);
 
 Route::prefix('expired-owners')
 ->middleware('auth:admin')
